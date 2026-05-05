@@ -11,9 +11,15 @@
     <strong>@ViewBag.ContractManagerId</strong>
 </p>
 
-<a asp-action="Index" class="btn btn-secondary mb-3">
-    Back to All Licenses
-</a>
+<div class="mb-3">
+    <a asp-controller="Users" asp-action="Index" class="btn btn-secondary">
+        Back to Users
+    </a>
+
+    <a asp-controller="Licenses" asp-action="Index" class="btn btn-outline-secondary">
+        Back to All Licenses
+    </a>
+</div>
 
 <table class="table table-bordered table-striped">
     <thead>
