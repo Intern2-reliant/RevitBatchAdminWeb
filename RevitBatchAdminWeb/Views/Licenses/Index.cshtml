@@ -1,0 +1,194 @@
+﻿@model List<RevitBatchAdminWeb.Services.LicenseDto>
+
+@{
+    ViewData["Title"] = "Licenses";
+}
+
+<h2>License Management</h2>
+
+<a asp-action="Create" class="btn btn-primary mb-3">
+    Create License
+</a>
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <input type="text"
+               id="licenseSearch"
+               class="form-control"
+               placeholder="Search license key, username, role..." />
+    </div>
+
+    <div class="col-md-3">
+        <select id="licenseTypeFilter" class="form-control">
+            <option value="">All License Types</option>
+            <option value="MainCM">Main CM</option>
+            <option value="SubLicense">Sub License</option>
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <select id="statusFilter" class="form-control">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button type="button" id="clearFilters" class="btn btn-secondary w-100">
+            Clear
+        </button>
+    </div>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>License Key</th>
+            <th>License Type</th>
+            <th>Parent CM ID</th>
+            <th>User</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Expiry</th>
+            <th>Device ID</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var lic in Model)
+        {
+            var statusText = lic.isActive ? "Active" : "Inactive";
+            var searchText = $"{lic.licenseKey} {lic.username} {lic.role} {lic.licenseType} {statusText}".ToLower();
+
+            <tr class="license-row"
+                data-search="@searchText"
+                data-type="@lic.licenseType"
+                data-status="@statusText">
+                <td>@lic.id</td>
+
+                <td style="min-width: 120px;">
+                    <strong>@lic.licenseKey</strong>
+                </td>
+
+                <td>
+                    @if (lic.licenseType == "MainCM")
+                    {
+                        <span class="badge bg-primary">Main CM</span>
+                    }
+                    else if (lic.licenseType == "SubLicense")
+                    {
+                        <span class="badge bg-secondary">Sub License</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-light text-dark">
+                            @(string.IsNullOrWhiteSpace(lic.licenseType) ? "Unknown" : lic.licenseType)
+                        </span>
+                    }
+                </td>
+
+                <td>
+                    @(lic.parentContractManagerId == null ? "-" : lic.parentContractManagerId)
+                </td>
+
+                <td>@lic.username</td>
+
+                <td>@lic.role</td>
+
+                <td>
+                    @if (lic.isActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inactive</span>
+                    }
+                </td>
+
+                <td>
+                    <form asp-action="UpdateExpiry" method="post">
+                        <input type="hidden" name="id" value="@lic.id" />
+                        <input type="date"
+                               name="expiryDate"
+                               class="form-control form-control-sm"
+                               value="@DateTime.Parse(lic.expiryDate).ToString("yyyy-MM-dd")"
+                               onchange="this.form.submit()" />
+                    </form>
+                </td>
+
+                <td style="max-width: 280px; word-break: break-all;">
+                    @(lic.deviceId == null || lic.deviceId.ToString() == "{}" ? "Not Bound" : lic.deviceId)
+                </td>
+
+                <td>
+                    <form asp-action="Toggle" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@lic.id" />
+                        <button type="submit" class="btn btn-warning btn-sm">
+                            Toggle
+                        </button>
+                    </form>
+
+                    <form asp-action="ResetDevice" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@lic.id" />
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            Reset Device
+                        </button>
+                    </form>
+
+                    @if (lic.licenseType == "MainCM")
+                    {
+                        <a asp-action="ContractManager"
+                           asp-route-id="@lic.userId"
+                           class="btn btn-info btn-sm mt-1">
+                            View Sub-Licenses
+                        </a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        const searchInput = document.getElementById("licenseSearch");
+        const typeFilter = document.getElementById("licenseTypeFilter");
+        const statusFilter = document.getElementById("statusFilter");
+        const clearButton = document.getElementById("clearFilters");
+
+        function applyFilters() {
+            const searchValue = searchInput.value.toLowerCase().trim();
+            const typeValue = typeFilter.value;
+            const statusValue = statusFilter.value;
+
+            document.querySelectorAll(".license-row").forEach(row => {
+                const rowSearch = row.dataset.search || "";
+                const rowType = row.dataset.type || "";
+                const rowStatus = row.dataset.status || "";
+
+                const matchesSearch = rowSearch.includes(searchValue);
+                const matchesType = !typeValue || rowType === typeValue;
+                const matchesStatus = !statusValue || rowStatus === statusValue;
+
+                row.style.display = matchesSearch && matchesType && matchesStatus
+                    ? ""
+                    : "none";
+            });
+        }
+
+        searchInput.addEventListener("input", applyFilters);
+        typeFilter.addEventListener("change", applyFilters);
+        statusFilter.addEventListener("change", applyFilters);
+
+        clearButton.addEventListener("click", function () {
+            searchInput.value = "";
+            typeFilter.value = "";
+            statusFilter.value = "";
+            applyFilters();
+        });
+    </script>}
+@* } *@

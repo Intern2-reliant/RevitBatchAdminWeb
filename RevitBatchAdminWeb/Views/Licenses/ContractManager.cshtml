@@ -1,0 +1,81 @@
+﻿@model List<RevitBatchAdminWeb.Services.LicenseDto>
+
+@{
+    ViewData["Title"] = "Contract Manager Licenses";
+}
+
+<h2>Contract Manager Licenses</h2>
+
+<p>
+    Showing sub-licenses for Contract Manager ID:
+    <strong>@ViewBag.ContractManagerId</strong>
+</p>
+
+<a asp-action="Index" class="btn btn-secondary mb-3">
+    Back to All Licenses
+</a>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>License Key</th>
+            <th>Status</th>
+            <th>Expiry</th>
+            <th>Device ID</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var lic in Model)
+        {
+            <tr>
+                <td>@lic.id</td>
+                <td><strong>@lic.licenseKey</strong></td>
+                <td>
+                    @if (lic.isActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inactive</span>
+                    }
+                </td>
+                
+                <td>
+                    <form asp-action="UpdateExpiry" method="post">
+                        <input type="hidden" name="id" value="@lic.id" />
+                        <input type="hidden" name="returnContractManagerId" value="@ViewBag.ContractManagerId" />
+                        <input type="date"
+                               name="expiryDate"
+                               class="form-control form-control-sm"
+                               value="@DateTime.Parse(lic.expiryDate).ToString("yyyy-MM-dd")"
+                               onchange="this.form.submit()" />
+                    </form>
+                </td>
+
+                <td style="max-width: 280px; word-break: break-all;">
+                    @(lic.deviceId == null || lic.deviceId.ToString() == "{}" ? "Not Bound" : lic.deviceId)
+                </td>
+                <td>
+                    <form asp-action="Toggle" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@lic.id" />
+                        <input type="hidden" name="returnContractManagerId" value="@ViewBag.ContractManagerId" />
+                        <button type="submit" class="btn btn-warning btn-sm">
+                            Toggle
+                        </button>
+                    </form>
+
+                    <form asp-action="ResetDevice" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@lic.id" />
+                        <input type="hidden" name="returnContractManagerId" value="@ViewBag.ContractManagerId" />
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            Reset Device
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

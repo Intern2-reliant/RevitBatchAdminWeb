@@ -1,0 +1,133 @@
+﻿@model List<RevitBatchAdminWeb.Services.UserDto>
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<h2>User Management</h2>
+
+<a href="/Users/Create" class="btn btn-primary mb-3">Create User</a>
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <input type="text"
+               id="userSearch"
+               class="form-control"
+               placeholder="Search username or role..." />
+    </div>
+
+    <div class="col-md-3">
+        <select id="roleFilter" class="form-control">
+            <option value="">All Roles</option>
+            <option value="user">user</option>
+            <option value="admin">admin</option>
+            <option value="contract manager">contract manager</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button type="button" id="clearUserFilters" class="btn btn-secondary w-100">
+            Clear
+        </button>
+    </div>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th>License Count</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var user in Model)
+        {
+            var normalizedRole = user.role?.Trim().ToLower() ?? "";
+            var searchText = $"{user.username} {normalizedRole}".ToLower();
+
+            <tr class="user-row"
+                data-search="@searchText"
+                data-role="@normalizedRole">
+                <td>@user.id</td>
+
+                <td>@user.username</td>
+
+                <td>
+                    @if (normalizedRole == "admin")
+                    {
+                        <span class="badge bg-dark">admin</span>
+                    }
+                    else if (normalizedRole == "contract manager")
+                    {
+                        <span class="badge bg-primary">contract manager</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">user</span>
+                    }
+                </td>
+
+                <td>@user.licenseCount</td>
+
+                <td>
+                  
+
+                    @if (normalizedRole == "contract manager")
+                    {
+                        <a asp-controller="Licenses"
+                           asp-action="ContractManager"
+                           asp-route-id="@user.id"
+                           class="btn btn-info btn-sm">
+                            View Licenses
+                        </a>
+                    }
+
+                    <form asp-action="Delete" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@user.id" />
+                        <button type="submit"
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('Delete this user and all licenses?');">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        const userSearchInput = document.getElementById("userSearch");
+        const roleFilter = document.getElementById("roleFilter");
+        const clearUserFilters = document.getElementById("clearUserFilters");
+
+        function applyUserFilters() {
+            const searchValue = userSearchInput.value.toLowerCase().trim();
+            const roleValue = roleFilter.value;
+
+            document.querySelectorAll(".user-row").forEach(row => {
+                const rowSearch = row.dataset.search || "";
+                const rowRole = row.dataset.role || "";
+
+                const matchesSearch = rowSearch.includes(searchValue);
+                const matchesRole = !roleValue || rowRole === roleValue;
+
+                row.style.display = matchesSearch && matchesRole ? "" : "none";
+            });
+        }
+
+        userSearchInput.addEventListener("input", applyUserFilters);
+        roleFilter.addEventListener("change", applyUserFilters);
+
+        clearUserFilters.addEventListener("click", function () {
+            userSearchInput.value = "";
+            roleFilter.value = "";
+            applyUserFilters();
+        });
+    </script>
+}
