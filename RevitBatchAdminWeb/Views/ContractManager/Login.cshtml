@@ -1,0 +1,27 @@
+﻿@{
+    ViewData["Title"] = "Contract Manager Login";
+}
+
+<h2>Contract Manager Login</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">
+        @ViewBag.Error
+    </div>
+}
+
+<form asp-action="Login" method="post" style="max-width: 450px;">
+    <div class="mb-3">
+        <label class="form-label">Main Contract Manager License Key</label>
+        <input type="text"
+               name="licenseKey"
+               class="form-control"
+               placeholder="CM-XXXX-XXXX"
+               required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Login
+    </button>
+</form>

@@ -1,0 +1,204 @@
+﻿@model List<RevitBatchAdminWeb.Services.LicenseDto>
+
+@{
+    ViewData["Title"] = "Contract Manager Dashboard";
+}
+
+<h2>Contract Manager Dashboard</h2>
+
+<p>
+    Logged in as:
+    <strong>@ViewBag.CmUsername</strong>
+</p>
+
+<p>
+    Main License:
+    <strong>@ViewBag.CmLicenseKey</strong>
+</p>
+
+<form asp-action="Logout" method="post" class="mb-3">
+    <button type="submit" class="btn btn-secondary">
+        Logout
+    </button>
+</form>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
+<div class="row mb-3">
+    <div class="col-md-5">
+        <input type="text"
+               id="licenseSearch"
+               class="form-control"
+               placeholder="Search license key or device ID..." />
+    </div>
+
+    <div class="col-md-3">
+        <select id="statusFilter" class="form-control">
+            <option value="">All Status</option>
+            <option value="enabled">Enabled</option>
+            <option value="disabled">Disabled</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button type="button" id="clearFilters" class="btn btn-secondary w-100">
+            Clear
+        </button>
+    </div>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>License Key</th>
+            <th>Usage Status</th>
+            <th>Device Status</th>
+            <th>Expiry</th>
+            <th>Device ID</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var lic in Model)
+        {
+            var usageStatusText = lic.subscriptionEnabled ? "enabled" : "disabled";
+
+            var deviceText = lic.deviceId == null || lic.deviceId.ToString() == "{}"
+                ? "Not Bound"
+                : lic.deviceId.ToString();
+
+            var deviceStatusText = deviceText == "Not Bound" ? "not bound" : "bound";
+
+            var searchText = $"{lic.licenseKey} {deviceText} {usageStatusText} {deviceStatusText}".ToLower();
+
+            <tr class="license-row"
+                data-search="@searchText"
+                data-status="@usageStatusText">
+
+                <td>@lic.id</td>
+
+                <td>
+                    <strong>@lic.licenseKey</strong>
+                </td>
+
+                <td>
+                    @if (lic.subscriptionEnabled)
+                    {
+                        <span class="badge bg-success">Enabled</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Disabled</span>
+                    }
+                </td>
+
+                <td>
+                    @if (deviceText == "Not Bound")
+                    {
+                        <span class="badge bg-secondary">Not Bound</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-info">Bound</span>
+                    }
+                </td>
+
+                <td>
+                    @{
+                        DateTime expiryParsed;
+                        var expiryDisplay = DateTime.TryParse(lic.expiryDate, out expiryParsed)
+                            ? expiryParsed.ToString("dd-MM-yyyy")
+                            : lic.expiryDate;
+                    }
+                    @expiryDisplay
+                </td>
+
+                <td style="max-width: 280px; word-break: break-all;">
+                    @deviceText
+                </td>
+
+                <td>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-primary"
+                            onclick="copyLicense('@lic.licenseKey')">
+                        Copy
+                    </button>
+
+                    <form asp-action="ToggleLicense" method="post" style="display:inline;">
+                        <input type="hidden" name="licenseId" value="@lic.id" />
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-warning"
+                                onclick="return confirm('Toggle this sub-license usage status?');">
+                            Toggle
+                        </button>
+                    </form>
+
+                    <form asp-action="ResetDevice" method="post" style="display:inline;">
+                        <input type="hidden" name="licenseId" value="@lic.id" />
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Reset device for this license?');">
+                            Reset Device
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        function copyLicense(licenseKey) {
+            navigator.clipboard.writeText(licenseKey)
+                .then(() => {
+                    alert("License copied: " + licenseKey);
+                })
+                .catch(() => {
+                    alert("Failed to copy license.");
+                });
+        }
+
+        const licenseSearchInput = document.getElementById("licenseSearch");
+        const statusFilter = document.getElementById("statusFilter");
+        const clearFilters = document.getElementById("clearFilters");
+
+        function applyLicenseFilters() {
+            const searchValue = licenseSearchInput.value.toLowerCase().trim();
+            const statusValue = statusFilter.value;
+
+            document.querySelectorAll(".license-row").forEach(row => {
+                const rowSearch = row.dataset.search || "";
+                const rowStatus = row.dataset.status || "";
+
+                const matchesSearch = rowSearch.includes(searchValue);
+                const matchesStatus = !statusValue || rowStatus === statusValue;
+
+                row.style.display = matchesSearch && matchesStatus ? "" : "none";
+            });
+        }
+
+        licenseSearchInput.addEventListener("input", applyLicenseFilters);
+        statusFilter.addEventListener("change", applyLicenseFilters);
+
+        clearFilters.addEventListener("click", function () {
+            licenseSearchInput.value = "";
+            statusFilter.value = "";
+            applyLicenseFilters();
+        });
+    </script>
+}

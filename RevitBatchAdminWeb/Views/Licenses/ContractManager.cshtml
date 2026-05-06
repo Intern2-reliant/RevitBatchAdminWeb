@@ -26,18 +26,28 @@
         <tr>
             <th>ID</th>
             <th>License Key</th>
+            <th>License Role</th>
             <th>Status</th>
             <th>Expiry</th>
             <th>Device ID</th>
             <th>Actions</th>
         </tr>
     </thead>
+
     <tbody>
         @foreach (var lic in Model)
         {
             <tr>
                 <td>@lic.id</td>
-                <td><strong>@lic.licenseKey</strong></td>
+
+                <td>
+                    <strong>@lic.licenseKey</strong>
+                </td>
+
+                <td>
+                    <span class="badge bg-secondary">Sub-License User</span>
+                </td>
+
                 <td>
                     @if (lic.isActive)
                     {
@@ -48,11 +58,12 @@
                         <span class="badge bg-danger">Inactive</span>
                     }
                 </td>
-                
+
                 <td>
                     <form asp-action="UpdateExpiry" method="post">
                         <input type="hidden" name="id" value="@lic.id" />
                         <input type="hidden" name="returnContractManagerId" value="@ViewBag.ContractManagerId" />
+
                         <input type="text"
                                name="expiryDate"
                                class="form-control form-control-sm"
@@ -64,10 +75,12 @@
                 <td style="max-width: 280px; word-break: break-all;">
                     @(lic.deviceId == null || lic.deviceId.ToString() == "{}" ? "Not Bound" : lic.deviceId)
                 </td>
+
                 <td>
                     <form asp-action="Toggle" method="post" style="display:inline;">
                         <input type="hidden" name="id" value="@lic.id" />
                         <input type="hidden" name="returnContractManagerId" value="@ViewBag.ContractManagerId" />
+
                         <button type="submit" class="btn btn-warning btn-sm">
                             Toggle
                         </button>
@@ -76,6 +89,7 @@
                     <form asp-action="ResetDevice" method="post" style="display:inline;">
                         <input type="hidden" name="id" value="@lic.id" />
                         <input type="hidden" name="returnContractManagerId" value="@ViewBag.ContractManagerId" />
+
                         <button type="submit" class="btn btn-danger btn-sm">
                             Reset Device
                         </button>

@@ -169,6 +169,74 @@ namespace RevitBatchAdminWeb.Services
 
             return response.IsSuccessStatusCode;
         }
+
+        public async Task<dynamic> ContractManagerLoginAsync(string licenseKey)
+        {
+            var json = JsonConvert.SerializeObject(new
+            {
+                licenseKey = licenseKey
+            });
+
+            var content = new StringContent(
+                json,
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PostAsync(
+                $"{BaseUrl}/Auth/contract-manager-login",
+                content
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new
+                {
+                    success = false,
+                    token = "",
+                    userId = 0,
+                    username = "",
+                    role = "",
+                    licenseType = "",
+                    licenseKey = ""
+                };
+            }
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+
+            dynamic result = JsonConvert.DeserializeObject(responseJson) ?? new
+            {
+                success = false,
+                token = "",
+                userId = 0,
+                username = "",
+                role = "",
+                licenseType = "",
+                licenseKey = ""
+            };
+
+            return result;
+        }
+
+        public async Task<bool> ContractManagerResetDeviceAsync(int licenseId)
+        {
+            var response = await _httpClient.PutAsync(
+                $"{BaseUrl}/License/contract-manager/reset-device/{licenseId}",
+                null
+            );
+
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> ContractManagerToggleLicenseAsync(int licenseId)
+        {
+            var response = await _httpClient.PutAsync(
+                $"{BaseUrl}/License/contract-manager/toggle/{licenseId}",
+                null
+            );
+
+            return response.IsSuccessStatusCode;
+        }
     }
 
     public class UserDto
