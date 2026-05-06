@@ -14,6 +14,15 @@ namespace RevitBatchAdminWeb.Controllers
 
         public async Task<IActionResult> Index()
         {
+            var token = HttpContext.Session.GetString("AdminToken");
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            _apiClient.SetBearerToken(token);
+
             var users = await _apiClient.GetUsersAsync();
             var licenses = await _apiClient.GetLicensesAsync();
 

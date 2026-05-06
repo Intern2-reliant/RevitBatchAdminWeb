@@ -74,8 +74,6 @@
                 <td>@user.licenseCount</td>
 
                 <td>
-                  
-
                     @if (normalizedRole == "contract manager")
                     {
                         <a asp-controller="Licenses"
@@ -83,6 +81,16 @@
                            asp-route-id="@user.id"
                            class="btn btn-info btn-sm">
                             View Licenses
+                        </a>
+                    }
+
+                    @if (normalizedRole != "admin")
+                    {
+                        <a asp-controller="Licenses"
+                           asp-action="Create"
+                           asp-route-userId="@user.id"
+                           class="btn btn-primary btn-sm">
+                            Add License
                         </a>
                     }
 

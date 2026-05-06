@@ -7,7 +7,7 @@
 <h2>License Management</h2>
 
 <a asp-action="Create" class="btn btn-primary mb-3">
-    Create License
+    Add License
 </a>
 
 <div class="row mb-3">
@@ -49,7 +49,7 @@
             <th>License Type</th>
             <th>Parent CM ID</th>
             <th>User</th>
-            <th>Role</th>
+            <th>License Role</th>
             <th>Status</th>
             <th>Expiry</th>
             <th>Device ID</th>
@@ -61,7 +61,7 @@
         @foreach (var lic in Model)
         {
             var statusText = lic.isActive ? "Active" : "Inactive";
-            var searchText = $"{lic.licenseKey} {lic.username} {lic.role} {lic.licenseType} {statusText}".ToLower();
+            var searchText = $"{lic.licenseKey} {lic.username} {lic.licenseType} {statusText}".ToLower();
 
             <tr class="license-row"
                 data-search="@searchText"
@@ -96,7 +96,26 @@
 
                 <td>@lic.username</td>
 
-                <td>@lic.role</td>
+                <td>
+                    @if (lic.licenseType == "MainCM")
+                    {
+                        <span class="badge bg-primary">Contract Manager</span>
+                    }
+                    else if (lic.licenseType == "SubLicense")
+                    {
+                        <span class="badge bg-secondary">Sub-License User</span>
+                    }
+                    else if (lic.licenseType == "UserLicense")
+                    {
+                        <span class="badge bg-info">User</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-light text-dark">
+                            @(string.IsNullOrWhiteSpace(lic.licenseType) ? "Unknown" : lic.licenseType)
+                        </span>
+                    }
+                </td>
 
                 <td>
                     @if (lic.isActive)
@@ -112,10 +131,10 @@
                 <td>
                     <form asp-action="UpdateExpiry" method="post">
                         <input type="hidden" name="id" value="@lic.id" />
-                        <input type="date"
+                        <input type="text"
                                name="expiryDate"
                                class="form-control form-control-sm"
-                               value="@DateTime.Parse(lic.expiryDate).ToString("yyyy-MM-dd")"
+                               value="@DateTime.Parse(lic.expiryDate).ToString("dd-MM-yyyy")"
                                onchange="this.form.submit()" />
                     </form>
                 </td>

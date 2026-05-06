@@ -14,6 +14,40 @@ namespace RevitBatchAdminWeb.Services
             _httpClient = httpClient;
         }
 
+        public void SetBearerToken(string token)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
+
+        public async Task<string?> AdminLoginAsync(string username, string password)
+        {
+            var json = JsonConvert.SerializeObject(new
+            {
+                username,
+                password
+            });
+
+            var content = new StringContent(
+                json,
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PostAsync(
+                $"{BaseUrl}/Auth/admin-login",
+                content
+            );
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+            dynamic? result = JsonConvert.DeserializeObject(responseJson);
+
+            return result?.token;
+        }
+
         public async Task<List<UserDto>> GetUsersAsync()
         {
             var json = await _httpClient.GetStringAsync($"{BaseUrl}/Users");
@@ -69,6 +103,7 @@ namespace RevitBatchAdminWeb.Services
 
             return response.IsSuccessStatusCode;
         }
+
         public async Task<bool> CreateUserAsync(CreateUserDto user)
         {
             var json = JsonConvert.SerializeObject(user);
@@ -147,6 +182,7 @@ namespace RevitBatchAdminWeb.Services
     public class LicenseDto
     {
         public int id { get; set; }
+        public int userId { get; set; }
         public string licenseKey { get; set; } = "";
         public bool isActive { get; set; }
         public object? deviceId { get; set; }
@@ -158,8 +194,6 @@ namespace RevitBatchAdminWeb.Services
         public string role { get; set; } = "";
         public string? licenseType { get; set; }
         public int? parentContractManagerId { get; set; }
-
-        public int userId { get; set; }
     }
 
     public class CreateUserDto

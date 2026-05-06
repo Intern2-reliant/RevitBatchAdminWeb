@@ -53,10 +53,10 @@
                     <form asp-action="UpdateExpiry" method="post">
                         <input type="hidden" name="id" value="@lic.id" />
                         <input type="hidden" name="returnContractManagerId" value="@ViewBag.ContractManagerId" />
-                        <input type="date"
+                        <input type="text"
                                name="expiryDate"
                                class="form-control form-control-sm"
-                               value="@DateTime.Parse(lic.expiryDate).ToString("yyyy-MM-dd")"
+                               value="@DateTime.Parse(lic.expiryDate).ToString("dd-MM-yyyy")"
                                onchange="this.form.submit()" />
                     </form>
                 </td>

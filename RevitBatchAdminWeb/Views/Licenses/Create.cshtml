@@ -1,10 +1,10 @@
 ﻿@model RevitBatchAdminWeb.Models.CreateLicenseViewModel
 
 @{
-    ViewData["Title"] = "Create License";
+    ViewData["Title"] = "Add License";
 }
 
-<h2>Create License</h2>
+<h2>Add License</h2>
 
 <form asp-action="Create" method="post">
     <div class="mb-3">
@@ -31,11 +31,11 @@
         <label class="form-label">Quantity</label>
         <input asp-for="Quantity" type="number" class="form-control" min="1" />
         <small class="form-text text-muted">
-            Use 1 when upgrading a normal user to Contract Manager. Use multiple for creating sub-licenses under a Contract Manager.
+            Quantity means how many new licenses to add. If the selected user already has a user license, adding more licenses will automatically upgrade them to Contract Manager. Their existing user license becomes the first sub-license.
         </small>
         <span asp-validation-for="Quantity" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Create License</button>
+    <button type="submit" class="btn btn-primary">Add License</button>
     <a asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>
