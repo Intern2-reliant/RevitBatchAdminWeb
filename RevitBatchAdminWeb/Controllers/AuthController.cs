@@ -21,6 +21,8 @@ namespace RevitBatchAdminWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password)
         {
+            ViewBag.Username = username;
+
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 ViewBag.Error = "Username and password are required.";
