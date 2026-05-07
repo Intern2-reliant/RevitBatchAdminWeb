@@ -20,12 +20,12 @@ namespace RevitBatchAdminWeb.Services
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         }
 
-        public async Task<string?> AdminLoginAsync(string username, string password)
+        public async Task<AdminLoginResult> AdminLoginAsync(string username, string password)
         {
             var json = JsonConvert.SerializeObject(new
             {
-                username,
-                password
+                username = username,
+                password = password
             });
 
             var content = new StringContent(
@@ -39,13 +39,50 @@ namespace RevitBatchAdminWeb.Services
                 content
             );
 
-            if (!response.IsSuccessStatusCode)
-                return null;
-
             var responseJson = await response.Content.ReadAsStringAsync();
-            dynamic? result = JsonConvert.DeserializeObject(responseJson);
 
-            return result?.token;
+            if (!response.IsSuccessStatusCode)
+            {
+                return new AdminLoginResult
+                {
+                    Success = false,
+                    StatusCode = (int)response.StatusCode,
+                    ErrorMessage = "API login failed.",
+                    RawResponse = responseJson
+                };
+            }
+
+            var result = JsonConvert.DeserializeObject<AdminLoginResponse>(responseJson);
+
+            if (result == null)
+            {
+                return new AdminLoginResult
+                {
+                    Success = false,
+                    StatusCode = (int)response.StatusCode,
+                    ErrorMessage = "Could not parse API response.",
+                    RawResponse = responseJson
+                };
+            }
+
+            if (!result.success || string.IsNullOrWhiteSpace(result.token))
+            {
+                return new AdminLoginResult
+                {
+                    Success = false,
+                    StatusCode = (int)response.StatusCode,
+                    ErrorMessage = "API returned success=false or empty token.",
+                    RawResponse = responseJson
+                };
+            }
+
+            return new AdminLoginResult
+            {
+                Success = true,
+                StatusCode = (int)response.StatusCode,
+                Token = result.token,
+                RawResponse = responseJson
+            };
         }
 
         public async Task<List<UserDto>> GetUsersAsync()
@@ -264,6 +301,17 @@ namespace RevitBatchAdminWeb.Services
         public int? parentContractManagerId { get; set; }
     }
 
+    public class AdminLoginResponse
+    {
+        public bool success { get; set; }
+        public string message { get; set; } = "";
+        public string token { get; set; } = "";
+        public int userId { get; set; }
+        public string username { get; set; } = "";
+        public string role { get; set; } = "";
+        public string licenseType { get; set; } = "";
+    }
+
     public class CreateUserDto
     {
         public string Username { get; set; } = "";
@@ -276,5 +324,14 @@ namespace RevitBatchAdminWeb.Services
     public class UpdateRoleDto
     {
         public string Role { get; set; } = "user";
+    }
+
+    public class AdminLoginResult
+    {
+        public bool Success { get; set; }
+        public string Token { get; set; } = "";
+        public string ErrorMessage { get; set; } = "";
+        public int StatusCode { get; set; }
+        public string RawResponse { get; set; } = "";
     }
 }

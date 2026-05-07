@@ -27,16 +27,18 @@ namespace RevitBatchAdminWeb.Controllers
                 return View();
             }
 
-            string? token = await _apiClient.AdminLoginAsync(username, password);
+            var loginResult = await _apiClient.AdminLoginAsync(username.Trim(), password.Trim());
 
-            if (string.IsNullOrWhiteSpace(token))
+            if (!loginResult.Success || string.IsNullOrWhiteSpace(loginResult.Token))
             {
-                ViewBag.Error = "Invalid admin username or password.";
+                ViewBag.Error =
+                    $"Admin login failed. Status: {loginResult.StatusCode}. Response: {loginResult.RawResponse}";
+
                 return View();
             }
 
-            HttpContext.Session.SetString("AdminToken", token);
-            HttpContext.Session.SetString("AdminUsername", username);
+            HttpContext.Session.SetString("AdminToken", loginResult.Token);
+            HttpContext.Session.SetString("AdminUsername", username.Trim());
 
             return RedirectToAction("Index", "Dashboard");
         }
