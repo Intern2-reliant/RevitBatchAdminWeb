@@ -178,3 +178,43 @@ body {
     padding: 16px;
     margin-bottom: 18px;
 }
+
+.login-wrapper {
+    min-height: 75vh;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 520px;
+    border: none;
+    border-radius: 22px;
+    background: #ffffff;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+}
+
+.landing-btn {
+    width: 280px;
+}
+
+.landing-card {
+    max-width: 780px;
+    padding: 48px;
+    background: #ffffff;
+    border-radius: 28px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+}
+
+.landing-title {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-bottom: 20px;
+}
+
+.landing-subtitle {
+    color: #64748b;
+    font-size: 18px;
+    line-height: 1.7;
+    max-width: 620px;
+    margin: 0 auto;
+}

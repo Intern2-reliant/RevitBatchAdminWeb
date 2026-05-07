@@ -2,26 +2,37 @@
     ViewData["Title"] = "Contract Manager Login";
 }
 
-<h2>Contract Manager Login</h2>
+<div class="login-wrapper d-flex justify-content-center align-items-center">
+    <div class="card login-card shadow-sm p-4">
+        <div class="card-body">
+            <h2 class="page-title text-center mb-3">Contract Manager Login</h2>
+            <p class="text-muted text-center mb-4">
+                Enter your main contract manager license key to access your panel.
+            </p>
 
-@if (ViewBag.Error != null)
-{
-    <div class="alert alert-danger">
-        @ViewBag.Error
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">
+                    @ViewBag.Error
+                </div>
+            }
+
+            <form asp-action="Login" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Main Contract Manager License Key</label>
+                    <input type="text"
+                           name="licenseKey"
+                           class="form-control"
+                           placeholder="CM-XXXX-XXXX"
+                           required />
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Login
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-}
-
-<form asp-action="Login" method="post" style="max-width: 450px;">
-    <div class="mb-3">
-        <label class="form-label">Main Contract Manager License Key</label>
-        <input type="text"
-               name="licenseKey"
-               class="form-control"
-               placeholder="CM-XXXX-XXXX"
-               required />
-    </div>
-
-    <button type="submit" class="btn btn-primary">
-        Login
-    </button>
-</form>
+</div>
