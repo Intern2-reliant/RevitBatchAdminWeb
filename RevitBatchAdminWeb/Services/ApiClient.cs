@@ -1,6 +1,7 @@
-﻿using System.Text;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RevitBatchAdminWeb.Models;
+using System.Text;
 
 namespace RevitBatchAdminWeb.Services
 {
@@ -34,55 +35,82 @@ namespace RevitBatchAdminWeb.Services
                 "application/json"
             );
 
-            var response = await _httpClient.PostAsync(
-                $"{BaseUrl}/Auth/admin-login",
-                content
-            );
+            try
+            {
+                // First attempt
+                var response = await _httpClient.PostAsync(
+                    $"{BaseUrl}/Auth/admin-login",
+                    content
+                );
 
-            var responseJson = await response.Content.ReadAsStringAsync();
+                var responseJson = await response.Content.ReadAsStringAsync();
 
-            if (!response.IsSuccessStatusCode)
+                // Render free API may sleep. Retry once if API returns 502/503.
+                if ((int)response.StatusCode == 502 || (int)response.StatusCode == 503)
+                {
+                    await Task.Delay(3000);
+
+                    var retryContent = new StringContent(
+                        json,
+                        Encoding.UTF8,
+                        "application/json"
+                    );
+
+                    response = await _httpClient.PostAsync(
+                        $"{BaseUrl}/Auth/admin-login",
+                        retryContent
+                    );
+
+                    responseJson = await response.Content.ReadAsStringAsync();
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string friendlyMessage = response.StatusCode switch
+                    {
+                        System.Net.HttpStatusCode.Unauthorized => "Invalid admin username or password.",
+                        System.Net.HttpStatusCode.BadGateway => "API is temporarily unavailable. Please try again in a few seconds.",
+                        System.Net.HttpStatusCode.ServiceUnavailable => "API is waking up. Please try again in a few seconds.",
+                        _ => "Admin login failed. Please try again."
+                    };
+
+                    return new AdminLoginResult
+                    {
+                        Success = false,
+                        StatusCode = (int)response.StatusCode,
+                        ErrorMessage = friendlyMessage
+                    };
+                }
+
+                var obj = JObject.Parse(responseJson);
+                string token = obj["token"]?.ToString() ?? "";
+
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    return new AdminLoginResult
+                    {
+                        Success = false,
+                        StatusCode = (int)response.StatusCode,
+                        ErrorMessage = "Login succeeded, but no token was returned."
+                    };
+                }
+
+                return new AdminLoginResult
+                {
+                    Success = true,
+                    StatusCode = (int)response.StatusCode,
+                    Token = token
+                };
+            }
+            catch
             {
                 return new AdminLoginResult
                 {
                     Success = false,
-                    StatusCode = (int)response.StatusCode,
-                    ErrorMessage = "API login failed.",
-                    RawResponse = responseJson
+                    StatusCode = 0,
+                    ErrorMessage = "Unable to connect to the API. Please try again."
                 };
             }
-
-            var result = JsonConvert.DeserializeObject<AdminLoginResponse>(responseJson);
-
-            if (result == null)
-            {
-                return new AdminLoginResult
-                {
-                    Success = false,
-                    StatusCode = (int)response.StatusCode,
-                    ErrorMessage = "Could not parse API response.",
-                    RawResponse = responseJson
-                };
-            }
-
-            if (!result.success || string.IsNullOrWhiteSpace(result.token))
-            {
-                return new AdminLoginResult
-                {
-                    Success = false,
-                    StatusCode = (int)response.StatusCode,
-                    ErrorMessage = "API returned success=false or empty token.",
-                    RawResponse = responseJson
-                };
-            }
-
-            return new AdminLoginResult
-            {
-                Success = true,
-                StatusCode = (int)response.StatusCode,
-                Token = result.token,
-                RawResponse = responseJson
-            };
         }
 
         public async Task<List<UserDto>> GetUsersAsync()
@@ -332,6 +360,5 @@ namespace RevitBatchAdminWeb.Services
         public string Token { get; set; } = "";
         public string ErrorMessage { get; set; } = "";
         public int StatusCode { get; set; }
-        public string RawResponse { get; set; } = "";
     }
 }

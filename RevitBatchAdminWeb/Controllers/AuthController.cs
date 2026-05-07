@@ -29,13 +29,14 @@ namespace RevitBatchAdminWeb.Controllers
                 return View();
             }
 
-            var loginResult = await _apiClient.AdminLoginAsync(username.Trim(), password.Trim());
+            var loginResult = await _apiClient.AdminLoginAsync(
+                username.Trim(),
+                password.Trim()
+            );
 
             if (!loginResult.Success || string.IsNullOrWhiteSpace(loginResult.Token))
             {
-                ViewBag.Error =
-                    $"Admin login failed. Status: {loginResult.StatusCode}. Response: {loginResult.RawResponse}";
-
+                ViewBag.Error = loginResult.ErrorMessage;
                 return View();
             }
 
