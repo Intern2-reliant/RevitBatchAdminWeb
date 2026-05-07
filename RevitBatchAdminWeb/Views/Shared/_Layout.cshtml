@@ -32,17 +32,72 @@
 
                 <div id="mainNavbar" class="collapse navbar-collapse">
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Auth" asp-action="Login">
-                                Admin Login
-                            </a>
-                        </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="ContractManager" asp-action="Login">
-                                Contract Manager Login
-                            </a>
-                        </li>
+                        @if (Context.Session.GetString("AdminToken") != null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                                    Dashboard
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Users" asp-action="Index">
+                                    Users
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Licenses" asp-action="Index">
+                                    Licenses
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <form asp-controller="Auth"
+                                      asp-action="Logout"
+                                      method="post"
+                                      class="d-inline">
+                                    <button type="submit" class="btn btn-link nav-link logout-link">
+                                        Logout
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else if (Context.Session.GetString("CmToken") != null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="ContractManager" asp-action="Dashboard">
+                                    Contract Manager Dashboard
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <form asp-controller="ContractManager"
+                                      asp-action="Logout"
+                                      method="post"
+                                      class="d-inline">
+                                    <button type="submit" class="btn btn-link nav-link logout-link">
+                                        Logout
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Auth" asp-action="Login">
+                                    Admin Login
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="ContractManager" asp-action="Login">
+                                    Contract Manager Login
+                                </a>
+                            </li>
+                        }
+
                     </ul>
                 </div>
             </div>
