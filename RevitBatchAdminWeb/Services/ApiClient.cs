@@ -208,6 +208,12 @@ namespace RevitBatchAdminWeb.Services
             return response.IsSuccessStatusCode;
         }
 
+        public async Task<bool> DeleteLicenseAsync(int id)
+        {
+            var response = await _httpClient.DeleteAsync($"{BaseUrl}/License/{id}");
+            return response.IsSuccessStatusCode;
+        }
+
         public async Task<bool> UpdateLicenseExpiryAsync(int id, DateTime expiryDate)
         {
             var json = JsonConvert.SerializeObject(new

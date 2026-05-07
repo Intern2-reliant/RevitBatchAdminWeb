@@ -4,31 +4,54 @@
     ViewData["Title"] = "Users";
 }
 
-<h2>User Management</h2>
+<div class="page-header">
+    <h2 class="page-title">User Management</h2>
+    <p class="page-subtitle">
+        Manage admin users, contract managers, and normal users.
+    </p>
+</div>
 
-<a href="/Users/Create" class="btn btn-primary mb-3">Create User</a>
-
-<div class="row mb-3">
-    <div class="col-md-4">
-        <input type="text"
-               id="userSearch"
-               class="form-control"
-               placeholder="Search username or role..." />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
     </div>
+}
 
-    <div class="col-md-3">
-        <select id="roleFilter" class="form-control">
-            <option value="">All Roles</option>
-            <option value="user">user</option>
-            <option value="admin">admin</option>
-            <option value="contract manager">contract manager</option>
-        </select>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
     </div>
+}
 
-    <div class="col-md-2">
-        <button type="button" id="clearUserFilters" class="btn btn-secondary w-100">
-            Clear
-        </button>
+<a href="/Users/Create" class="btn btn-primary mb-3">
+    Create User
+</a>
+
+<div class="filter-bar">
+    <div class="row">
+        <div class="col-md-4 mb-2 mb-md-0">
+            <input type="text"
+                   id="userSearch"
+                   class="form-control"
+                   placeholder="Search username or role..." />
+        </div>
+
+        <div class="col-md-3 mb-2 mb-md-0">
+            <select id="roleFilter" class="form-control">
+                <option value="">All Roles</option>
+                <option value="user">user</option>
+                <option value="admin">admin</option>
+                <option value="contract manager">contract manager</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <button type="button" id="clearUserFilters" class="btn btn-secondary w-100">
+                Clear
+            </button>
+        </div>
     </div>
 </div>
 
@@ -52,9 +75,12 @@
             <tr class="user-row"
                 data-search="@searchText"
                 data-role="@normalizedRole">
+
                 <td>@user.id</td>
 
-                <td>@user.username</td>
+                <td>
+                    <strong>@user.username</strong>
+                </td>
 
                 <td>
                     @if (normalizedRole == "admin")
@@ -92,16 +118,22 @@
                            class="btn btn-primary btn-sm">
                             Add License
                         </a>
-                    }
 
-                    <form asp-action="Delete" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="@user.id" />
-                        <button type="submit"
-                                class="btn btn-danger btn-sm"
-                                onclick="return confirm('Delete this user and all licenses?');">
-                            Delete
-                        </button>
-                    </form>
+                        <form asp-action="Delete" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@user.id" />
+                            <button type="submit"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="return confirm('WARNING: This will permanently delete this user and all licenses under this user. This action cannot be undone. Continue?');">
+                                Delete
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="text-muted small">
+                            Admin account protected
+                        </span>
+                    }
                 </td>
             </tr>
         }

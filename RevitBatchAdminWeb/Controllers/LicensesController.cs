@@ -161,5 +161,28 @@ namespace RevitBatchAdminWeb.Controllers
 
             return RedirectToAction("Index");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            if (!SetAdminToken())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            bool success = await _apiClient.DeleteLicenseAsync(id);
+
+            if (!success)
+            {
+                TempData["Error"] = "Failed to delete license.";
+            }
+            else
+            {
+                TempData["Success"] = "License deleted successfully.";
+            }
+
+            return RedirectToAction("Index");
+        }
     }
+
 }

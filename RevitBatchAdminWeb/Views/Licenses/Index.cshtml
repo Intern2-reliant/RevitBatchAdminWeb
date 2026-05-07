@@ -4,40 +4,61 @@
     ViewData["Title"] = "Licenses";
 }
 
-<h2>License Management</h2>
+<div class="page-header">
+    <h2 class="page-title">License Management</h2>
+    <p class="page-subtitle">
+        Manage main contract manager licenses, sub-licenses, device bindings, expiry dates, and license status.
+    </p>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
 
 <a asp-action="Create" class="btn btn-primary mb-3">
     Add License
 </a>
 
-<div class="row mb-3">
-    <div class="col-md-4">
-        <input type="text"
-               id="licenseSearch"
-               class="form-control"
-               placeholder="Search license key, username, role..." />
-    </div>
+<div class="filter-bar">
+    <div class="row">
+        <div class="col-md-4 mb-2 mb-md-0">
+            <input type="text"
+                   id="licenseSearch"
+                   class="form-control"
+                   placeholder="Search license key, username, role..." />
+        </div>
 
-    <div class="col-md-3">
-        <select id="licenseTypeFilter" class="form-control">
-            <option value="">All License Types</option>
-            <option value="MainCM">Main CM</option>
-            <option value="SubLicense">Sub License</option>
-        </select>
-    </div>
+        <div class="col-md-3 mb-2 mb-md-0">
+            <select id="licenseTypeFilter" class="form-control">
+                <option value="">All License Types</option>
+                <option value="MainCM">Main CM</option>
+                <option value="SubLicense">Sub License</option>
+            </select>
+        </div>
 
-    <div class="col-md-3">
-        <select id="statusFilter" class="form-control">
-            <option value="">All Status</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-        </select>
-    </div>
+        <div class="col-md-3 mb-2 mb-md-0">
+            <select id="statusFilter" class="form-control">
+                <option value="">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+        </div>
 
-    <div class="col-md-2">
-        <button type="button" id="clearFilters" class="btn btn-secondary w-100">
-            Clear
-        </button>
+        <div class="col-md-2">
+            <button type="button" id="clearFilters" class="btn btn-secondary w-100">
+                Clear
+            </button>
+        </div>
     </div>
 </div>
 
@@ -61,15 +82,18 @@
         @foreach (var lic in Model)
         {
             var statusText = lic.isActive ? "Active" : "Inactive";
-            var searchText = $"{lic.licenseKey} {lic.username} {lic.licenseType} {statusText}".ToLower();
+            var licenseTypeText = string.IsNullOrWhiteSpace(lic.licenseType) ? "Unknown" : lic.licenseType;
+            var deviceText = lic.deviceId == null || lic.deviceId.ToString() == "{}" ? "Not Bound" : lic.deviceId.ToString();
+            var searchText = $"{lic.licenseKey} {lic.username} {licenseTypeText} {statusText} {deviceText}".ToLower();
 
             <tr class="license-row"
                 data-search="@searchText"
-                data-type="@lic.licenseType"
+                data-type="@licenseTypeText"
                 data-status="@statusText">
+
                 <td>@lic.id</td>
 
-                <td style="min-width: 120px;">
+                <td style="min-width: 130px;">
                     <strong>@lic.licenseKey</strong>
                 </td>
 
@@ -85,7 +109,7 @@
                     else
                     {
                         <span class="badge bg-light text-dark">
-                            @(string.IsNullOrWhiteSpace(lic.licenseType) ? "Unknown" : lic.licenseType)
+                            @licenseTypeText
                         </span>
                     }
                 </td>
@@ -94,7 +118,9 @@
                     @(lic.parentContractManagerId == null ? "-" : lic.parentContractManagerId)
                 </td>
 
-                <td>@lic.username</td>
+                <td>
+                    <strong>@lic.username</strong>
+                </td>
 
                 <td>
                     @if (lic.licenseType == "MainCM")
@@ -112,7 +138,7 @@
                     else
                     {
                         <span class="badge bg-light text-dark">
-                            @(string.IsNullOrWhiteSpace(lic.licenseType) ? "Unknown" : lic.licenseType)
+                            @licenseTypeText
                         </span>
                     }
                 </td>
@@ -131,30 +157,51 @@
                 <td>
                     <form asp-action="UpdateExpiry" method="post">
                         <input type="hidden" name="id" value="@lic.id" />
+
+                        @{
+                            DateTime expiryParsed;
+                            var expiryDisplay = DateTime.TryParse(lic.expiryDate, out expiryParsed)
+                                ? expiryParsed.ToString("dd-MM-yyyy")
+                                : lic.expiryDate;
+                        }
+
                         <input type="text"
                                name="expiryDate"
                                class="form-control form-control-sm"
-                               value="@DateTime.Parse(lic.expiryDate).ToString("dd-MM-yyyy")"
+                               value="@expiryDisplay"
                                onchange="this.form.submit()" />
                     </form>
                 </td>
 
                 <td style="max-width: 280px; word-break: break-all;">
-                    @(lic.deviceId == null || lic.deviceId.ToString() == "{}" ? "Not Bound" : lic.deviceId)
+                    @deviceText
                 </td>
 
-                <td>
+                <td style="min-width: 260px;">
                     <form asp-action="Toggle" method="post" style="display:inline;">
                         <input type="hidden" name="id" value="@lic.id" />
-                        <button type="submit" class="btn btn-warning btn-sm">
+                        <button type="submit"
+                                class="btn btn-warning btn-sm"
+                                onclick="return confirm('Toggle this license status?');">
                             Toggle
                         </button>
                     </form>
 
                     <form asp-action="ResetDevice" method="post" style="display:inline;">
                         <input type="hidden" name="id" value="@lic.id" />
-                        <button type="submit" class="btn btn-danger btn-sm">
+                        <button type="submit"
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('Reset device binding for this license? The user will need to login again and bind a device.');">
                             Reset Device
+                        </button>
+                    </form>
+
+                    <form asp-action="Delete" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@lic.id" />
+                        <button type="submit"
+                                class="btn btn-outline-danger btn-sm"
+                                onclick="return confirm('WARNING: This will permanently delete this license. This action cannot be undone. Continue?');">
+                            Delete
                         </button>
                     </form>
 
@@ -209,5 +256,5 @@
             statusFilter.value = "";
             applyFilters();
         });
-    </script>}
-@* } *@
+    </script>
+}
