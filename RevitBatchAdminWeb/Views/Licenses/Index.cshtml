@@ -83,8 +83,15 @@
         {
             var statusText = lic.isActive ? "Active" : "Inactive";
             var licenseTypeText = string.IsNullOrWhiteSpace(lic.licenseType) ? "Unknown" : lic.licenseType;
-            var deviceText = lic.deviceId == null || lic.deviceId.ToString() == "{}" ? "Not Bound" : lic.deviceId.ToString();
-            var searchText = $"{lic.licenseKey} {lic.username} {licenseTypeText} {statusText} {deviceText}".ToLower();
+            var usernameText = lic.username?.Trim() ?? "";
+            var normalizedUsername = usernameText.ToLower();
+            var deviceText = lic.deviceId == null || lic.deviceId.ToString() == "{}"
+                ? "Not Bound"
+                : lic.deviceId.ToString();
+
+            var searchText = $"{lic.licenseKey} {usernameText} {licenseTypeText} {statusText} {deviceText}".ToLower();
+            var isAdminLicense = normalizedUsername == "admin";
+            var isMainCmLicense = licenseTypeText == "MainCM";
 
             <tr class="license-row"
                 data-search="@searchText"
@@ -119,7 +126,7 @@
                 </td>
 
                 <td>
-                    <strong>@lic.username</strong>
+                    <strong>@usernameText</strong>
                 </td>
 
                 <td>
@@ -177,7 +184,7 @@
                     @deviceText
                 </td>
 
-                <td style="min-width: 260px;">
+                <td style="min-width: 280px;">
                     <form asp-action="Toggle" method="post" style="display:inline;">
                         <input type="hidden" name="id" value="@lic.id" />
                         <button type="submit"
@@ -196,14 +203,34 @@
                         </button>
                     </form>
 
-                    <form asp-action="Delete" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="@lic.id" />
-                        <button type="submit"
-                                class="btn btn-outline-danger btn-sm"
-                                onclick="return confirm('WARNING: This will permanently delete this license. This action cannot be undone. Continue?');">
-                            Delete
-                        </button>
-                    </form>
+                    @if (isAdminLicense)
+                    {
+                        <span class="text-muted small ms-1">
+                            Admin license protected
+                        </span>
+                    }
+                    else if (isMainCmLicense)
+                    {
+                        <form asp-action="Delete" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@lic.id" />
+                            <button type="submit"
+                                    class="btn btn-outline-danger btn-sm"
+                                    onclick="return confirm('WARNING: This is a Main Contract Manager license. Deleting it may permanently delete or disconnect all sub-licenses under this Contract Manager. This action cannot be undone. Continue?');">
+                                Delete
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-action="Delete" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@lic.id" />
+                            <button type="submit"
+                                    class="btn btn-outline-danger btn-sm"
+                                    onclick="return confirm('WARNING: This will permanently delete this license. This action cannot be undone. Continue?');">
+                                Delete
+                            </button>
+                        </form>
+                    }
 
                     @if (lic.licenseType == "MainCM")
                     {
