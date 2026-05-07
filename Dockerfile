@@ -3,8 +3,8 @@ WORKDIR /src
 
 COPY . .
 
-RUN dotnet restore "RevitBatchAdminWeb.csproj"
-RUN dotnet publish "RevitBatchAdminWeb.csproj" -c Release -o /app/publish
+RUN dotnet restore "RevitBatchAdminWeb/RevitBatchAdminWeb.csproj"
+RUN dotnet publish "RevitBatchAdminWeb/RevitBatchAdminWeb.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS final
 WORKDIR /app
