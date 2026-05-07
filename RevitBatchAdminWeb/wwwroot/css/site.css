@@ -163,9 +163,10 @@ body {
 .landing-subtitle {
     color: #64748b;
     font-size: 18px;
-    line-height: 1.7;
-    max-width: 620px;
-    margin: 0 auto;
+    line-height: 1.6;
+    max-width: 760px;
+    margin: 0 auto 24px auto;
+    text-align: center;
 }
 
 .landing-btn {
