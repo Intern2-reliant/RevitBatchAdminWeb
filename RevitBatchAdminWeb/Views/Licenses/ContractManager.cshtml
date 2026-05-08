@@ -90,8 +90,10 @@
                         <input type="hidden" name="id" value="@lic.id" />
                         <input type="hidden" name="returnContractManagerId" value="@ViewBag.ContractManagerId" />
 
-                        <button type="submit" class="btn btn-danger btn-sm">
-                            Reset Device
+                        <button type="submit"
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('Deauthorize this license? This will remove the current device binding. The user must activate this license again on the next login. Continue?');">
+                            Deauthorize License
                         </button>
                     </form>
                 </td>
