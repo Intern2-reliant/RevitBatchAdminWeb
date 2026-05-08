@@ -1,36 +1,47 @@
-﻿@model RevitBatchAdminWeb.Controllers.DashboardViewModel
-
-@{
+﻿@{
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<h2>Revit Batch SaaS Admin Dashboard</h2>
+<div class="page-header">
+    <h2 class="page-title">Revit Batch SaaS Admin Dashboard</h2>
+    <p class="page-subtitle">
+        Overview of users, licenses, active subscriptions, and contract managers.
+    </p>
+</div>
 
-<div style="display:grid;grid-template-columns:repeat(2, 300px);gap:20px;margin-top:30px;">
-
-    <div style="padding:20px;border:1px solid #ccc;border-radius:8px;">
-        <h4>Total Users</h4>
-        <h2>@Model.TotalUsers</h2>
+<div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+        <div class="card dashboard-card p-4">
+            <h5>Total Users</h5>
+            <div class="metric">@ViewBag.TotalUsers</div>
+        </div>
     </div>
 
-    <div style="padding:20px;border:1px solid #ccc;border-radius:8px;">
-        <h4>Total Licenses</h4>
-        <h2>@Model.TotalLicenses</h2>
+    <div class="col-md-6 col-lg-4">
+        <div class="card dashboard-card p-4">
+            <h5>Total Licenses</h5>
+            <div class="metric">@ViewBag.TotalLicenses</div>
+        </div>
     </div>
 
-    <div style="padding:20px;border:1px solid #ccc;border-radius:8px;">
-        <h4>Active Licenses</h4>
-        <h2>@Model.ActiveLicenses</h2>
+    <div class="col-md-6 col-lg-4">
+        <div class="card dashboard-card p-4">
+            <h5>Active Licenses</h5>
+            <div class="metric">@ViewBag.ActiveLicenses</div>
+        </div>
     </div>
 
-    <div style="padding:20px;border:1px solid #ccc;border-radius:8px;">
-        <h4>Inactive Licenses</h4>
-        <h2>@Model.InactiveLicenses</h2>
+    <div class="col-md-6 col-lg-4">
+        <div class="card dashboard-card p-4">
+            <h5>Inactive Licenses</h5>
+            <div class="metric">@ViewBag.InactiveLicenses</div>
+        </div>
     </div>
 
-    <div style="padding:20px;border:1px solid #ccc;border-radius:8px;">
-        <h4>License Managers</h4>
-        <h2>@Model.ContractManagers</h2>
+    <div class="col-md-6 col-lg-4">
+        <div class="card dashboard-card p-4">
+            <h5>Contract Managers</h5>
+            <div class="metric">@ViewBag.ContractManagers</div>
+        </div>
     </div>
-
 </div>

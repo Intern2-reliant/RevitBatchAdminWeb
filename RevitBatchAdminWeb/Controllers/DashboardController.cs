@@ -14,7 +14,7 @@ namespace RevitBatchAdminWeb.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var token = HttpContext.Session.GetString("AdminToken");
+            string? token = HttpContext.Session.GetString("AdminToken");
 
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -26,26 +26,16 @@ namespace RevitBatchAdminWeb.Controllers
             var users = await _apiClient.GetUsersAsync();
             var licenses = await _apiClient.GetLicensesAsync();
 
-            var model = new DashboardViewModel
-            {
-                TotalUsers = users.Count,
-                TotalLicenses = licenses.Count,
-                ActiveLicenses = licenses.Count(l => l.isActive),
-                InactiveLicenses = licenses.Count(l => !l.isActive),
-                ContractManagers = users.Count(u =>
-                    u.role.Equals("contract manager", StringComparison.OrdinalIgnoreCase))
-            };
+            ViewBag.TotalUsers = users.Count;
+            ViewBag.TotalLicenses = licenses.Count;
+            ViewBag.ActiveLicenses = licenses.Count(l => l.isActive);
+            ViewBag.InactiveLicenses = licenses.Count(l => !l.isActive);
+            ViewBag.ContractManagers = users.Count(u =>
+                !string.IsNullOrWhiteSpace(u.role) &&
+                u.role.Trim().ToLower() == "contract manager"
+            );
 
-            return View(model);
+            return View();
         }
-    }
-
-    public class DashboardViewModel
-    {
-        public int TotalUsers { get; set; }
-        public int TotalLicenses { get; set; }
-        public int ActiveLicenses { get; set; }
-        public int InactiveLicenses { get; set; }
-        public int ContractManagers { get; set; }
     }
 }

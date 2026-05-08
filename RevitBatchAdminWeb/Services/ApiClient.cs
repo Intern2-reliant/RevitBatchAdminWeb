@@ -109,14 +109,46 @@ namespace RevitBatchAdminWeb.Services
 
         public async Task<List<UserDto>> GetUsersAsync()
         {
-            var json = await _httpClient.GetStringAsync($"{BaseUrl}/Users");
-            return JsonConvert.DeserializeObject<List<UserDto>>(json) ?? new List<UserDto>();
+            try
+            {
+                var response = await _httpClient.GetAsync($"{BaseUrl}/Users");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new List<UserDto>();
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<List<UserDto>>(json)
+                       ?? new List<UserDto>();
+            }
+            catch
+            {
+                return new List<UserDto>();
+            }
         }
 
         public async Task<List<LicenseDto>> GetLicensesAsync()
         {
-            var json = await _httpClient.GetStringAsync($"{BaseUrl}/License");
-            return JsonConvert.DeserializeObject<List<LicenseDto>>(json) ?? new List<LicenseDto>();
+            try
+            {
+                var response = await _httpClient.GetAsync($"{BaseUrl}/License");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new List<LicenseDto>();
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<List<LicenseDto>>(json)
+                       ?? new List<LicenseDto>();
+            }
+            catch
+            {
+                return new List<LicenseDto>();
+            }
         }
 
         public async Task<List<LicenseDto>> GetContractManagerLicensesAsync(int contractManagerId)
